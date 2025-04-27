@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinTrackBot - Your Finance Assistant 💰</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #161cc9;
+        --secondary-color: #330fc7;
+        --text-color: #333;
+        --bg-color: #f5f5f5;
+        --chatbot-bg: #fff;
+        --header-bg: #1618b7;
+        --header-text: #fff;
+        --user-message-bg: #e8f5e9;
+        --bot-message-bg: #f1f8e9;
+        --input-bg: #fff;
+        --border-color: #ddd;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --typing-bg: #f1f8e9;
+        --typing-text: #0718d7;
+        --typing-dot: #0e31af;
+        --visualizer-bg: #f5f5f5;
+      }
+
+      .dark-mode {
+        --text-color: #f5f5f5;
+        --bg-color: #121212;
+        --chatbot-bg: #1e1e1e;
+        --user-message-bg: #130d67;
+        --bot-message-bg: #1a08a3;
+        --input-bg: #2d2d2d;
+        --border-color: #444;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --typing-bg: #220b9f;
+        --typing-text: #c8e6c9;
+        --typing-dot: #0f0694;
+        --visualizer-bg: #2d2d2d;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .container {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .feature-card {
+        background-color: var(--chatbot-bg);
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 5px 15px var(--shadow-color);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px var(--shadow-color);
+      }
+
+      .feature-card i {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+      }
+
+      .feature-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: var(--text-color);
+      }
+
+      .feature-card p {
+        color: var(--text-color);
+        line-height: 1.6;
+      }
+
+      .cta-container {
+        text-align: center;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .cta-button {
+        display: inline-block;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        text-decoration: none;
+        transition: background-color 0.3s, transform 0.3s;
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        white-space: nowrap;
+      }
+
+      .cta-button:hover {
+        background-color: var(--secondary-color);
+        transform: scale(1.05);
+      }
+
+      .chatbot-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 420px;
+        background-color: var(--chatbot-bg);
+        border-radius: 15px;
+        box-shadow: 0 5px 25px var(--shadow-color);
+        overflow: hidden;
+        transform: scale(0);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .chatbot-container.active {
+        transform: scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .chatbot-header {
+        background-color: var(--header-bg);
+        color: var(--header-text);
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .chatbot-header h2 {
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .chatbot-header h2 i {
+        margin-right: 10px;
+      }
+
+      .chatbot-messages {
+        height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .user-message,
+      .bot-message {
+        max-width: 80%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .user-message {
+        background-color: var(--user-message-bg);
+        align-self: flex-end;
+        border-bottom-right-radius: 0;
+      }
+
+      .bot-message {
+        background-color: var(--bot-message-bg);
+        padding: 12px 16px;
+        border-radius: 10px;
+        max-width: 80%;
+        align-self: flex-start;
+        border-bottom-left-radius: 0;
+        line-height: 1.5;
+        word-wrap: break-word;
+        white-space: pre-line;
+      }
+
+      .message-content {
+        white-space: pre-line;
+        word-wrap: break-word;
+        font-family: inherit;
+        margin: 0;
+        padding: 0;
+        background: none;
+        border: none;
+        font-size: inherit;
+        line-height: 1.5;
+        width: 100%;
+      }
+
+      .bot-message pre {
+        white-space: pre-line;
+        word-wrap: break-word;
+        font-family: inherit;
+        margin: 0;
+        padding: 0;
+        background: none;
+        border: none;
+        font-size: inherit;
+        width: 100%;
+      }
+
+      .message-content {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+
+      .message-content.typing {
+        opacity: 0.8;
+      }
+
+      .typing-indicator {
+        background-color: var(--typing-bg);
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .typing-content {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .typing-text {
+        color: var(--typing-text);
+        font-size: 0.9rem;
+      }
+
+      .typing-dots {
+        display: flex;
+        gap: 5px;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--typing-dot);
+        border-radius: 50%;
+        animation: typing 1s infinite;
+      }
+
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typing {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .chatbot-input-container {
+        padding: 15px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 25px;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        font-size: 0.95rem;
+        outline: none;
+      }
+
+      .chatbot-input::placeholder {
+        color: #999;
+      }
+
+      #send-button,
+      #tts-button {
+        background: var(--header-bg);
+        color: var(--header-text);
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+
+      #send-button:hover,
+      #tts-button:hover {
+        transform: scale(1.05);
+      }
+
+      #tts-button.active {
+        background: #2196f3;
+      }
+
+      .voice-status {
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-color);
+        margin-top: 5px;
+        height: 20px;
+      }
+
+      .chatbot-toggler {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        transition: transform 0.3s, background-color 0.3s;
+        z-index: 999;
+      }
+
+      .chatbot-toggler:hover {
+        transform: scale(1.1);
+        background-color: var(--secondary-color);
+      }
+
+      .chatbot-toggler i {
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .close-chatbot {
+        background: none;
+        border: none;
+        color: var(--header-text);
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      .dark-mode-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+
+      .dark-mode-toggle input {
+        display: none;
+      }
+
+      .dark-mode-toggle label {
+        width: 60px;
+        height: 30px;
+        background-color: #ccc;
+        border-radius: 15px;
+        position: relative;
+        cursor: pointer;
+        display: block;
+        transition: background-color 0.3s;
+      }
+
+      .dark-mode-toggle label:before {
+        content: "";
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background-color: white;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s;
+      }
+
+      .dark-mode-toggle input:checked + label {
+        background-color: #333;
+      }
+
+      .dark-mode-toggle input:checked + label:before {
+        transform: translateX(30px);
+      }
+
+      .dark-mode-toggle i {
+        position: absolute;
+        top: 5px;
+        font-size: 1rem;
+        color: #333;
+      }
+
+      .dark-mode-toggle .fa-sun {
+        left: 8px;
+      }
+
+      .dark-mode-toggle .fa-moon {
+        right: 8px;
+        color: white;
+      }
+
+      .dark-mode-toggle input:checked + label .fa-sun {
+        color: #ccc;
+      }
+
+      .dark-mode-toggle input:checked + label .fa-moon {
+        color: white;
+      }
+
+      /* Markdown formatting styles */
+      .bot-message strong {
+        font-weight: 700;
+        color: #2e7d32;
+      }
+
+      .bot-message em {
+        font-style: italic;
+      }
+
+      .bot-message h3 {
+        margin-top: 10px;
+        margin-bottom: 5px;
+        color: #2e7d32;
+        font-size: 1.1em;
+      }
+
+      .bot-message ul {
+        margin-left: 20px;
+        margin-bottom: 10px;
+      }
+
+      .bot-message li {
+        margin-bottom: 5px;
+      }
+
+      .bot-message p {
+        margin-bottom: 10px;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .header p {
+          font-size: 1rem;
+        }
+
+        .features {
+          grid-template-columns: 1fr;
+        }
+
+        .chatbot-container {
+          width: 90%;
+          right: 5%;
+          bottom: 20px;
+        }
+
+        .chatbot-toggler {
+          right: 20px;
+          bottom: 20px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 1.8rem;
+        }
+
+        .feature-card {
+          padding: 20px;
+        }
+
+        .cta-button {
+          padding: 12px 25px;
+          font-size: 1rem;
+        }
+
+        .chatbot-container {
+          width: 95%;
+          right: 2.5%;
+        }
+
+        .chatbot-messages {
+          height: 350px;
+        }
+
+        .user-message,
+        .bot-message {
+          max-width: 90%;
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>FinTrackBot 💰</h1>
+        <p>
+          Your personal finance assistant to help you manage money, track expenses,
+          create budgets, and improve savings—all in one place.
+        </p>
+      </div>
+
+      <div class="features">
+        <div class="feature-card">
+          <i class="fas fa-wallet"></i>
+          <h3>Expense Tracking</h3>
+          <p>
+            Log your daily and monthly spending to stay on top of your finances with ease.
+          </p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-chart-line"></i>
+          <h3>Budget Planning</h3>
+          <p>
+            Create personalized budgets using rules like the 50/30/20 method and get spending insights.
+          </p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-piggy-bank"></i>
+          <h3>Saving Goals</h3>
+          <p>
+            Set goals and track your savings progress toward building a better financial future.
+          </p>
+        </div>
+      </div>
+
+      <div class="cta-container">
+        <a href="#" class="cta-button" id="try-now-button">Try FinTrackBot Now</a>
+        <a href="chatbot.html" class="cta-button" id="full-chatbot-button">Full Chatbot Experience</a>
+      </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle">
+      <input type="checkbox" id="dark-mode-toggle" />
+      <label for="dark-mode-toggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+      </label>
+    </div>
+
+    <!-- Chatbot Toggle Button -->
+    <div class="chatbot-toggler">
+      <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container">
+      <div class="chatbot-header">
+        <h2><i class="fas fa-robot"></i> FinTrackBot</h2>
+        <button class="close-chatbot">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="chatbot-messages">
+        <div class="bot-message">
+          <p>
+            Hello! I'm <strong>FinTrackBot</strong> 💰—here to assist you with expense tracking,
+            budgeting, and saving advice. Ask me anything about personal finance!
+          </p>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="chatbot-input-container">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            class="chatbot-input"
+            placeholder="Ask me anything about finance..."
+          />
+          <button id="tts-button" title="Toggle Text-to-Speech">
+            <i class="fas fa-volume-up"></i>
+          </button>
+          <button id="send-button" title="Send Message">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+  </body>
+</html>
