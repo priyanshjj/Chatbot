@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinTrackBot - Your Finance Assistant 💰</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      /* ===== BASE VARIABLES ===== */
+      :root {
+        /* Light Mode Colors */
+        --bg-color: #f9f9f9;
+        --text-color: #333;
+        --header-bg: #2932a4;
+        --header-text: white;
+        --message-bot-bg: #f1f1f1;
+        --message-user-bg: #2518b6;
+        --message-user-text: white;
+        --input-bg: white;
+        --input-border: #ddd;
+        --visualizer-bg: #f1f1f1;
+        --visualizer-dark-bg: #2d2d2d;
+        --status-text: #666;
+        --favorite-color: #ffd700;
+        --typing-dot-color: #888;
+        --error-color: #ff4444;
+      }
+
+      /* Dark Mode Colors */
+      .dark-mode {
+        --bg-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --header-bg: #2b0788;
+        --header-text: #f5f5f5;
+        --message-bot-bg: #2d2d2d;
+        --message-user-bg: #2003c3;
+        --message-user-text: #f5f5f5;
+        --input-bg: #2d2d2d;
+        --input-border: #444;
+        --visualizer-bg: #2d2d2d;
+        --visualizer-dark-bg: #1a1a1a;
+        --status-text: #aaa;
+        --favorite-color: #ffd700;
+        --typing-dot-color: #ccc;
+        --error-color: #ff6b6b;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      body {
+        background: var(--bg-color);
+        color: var(--text-color);
+      }
+
+      .chatbot-fullpage {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .chatbot-header {
+        background: var(--header-bg);
+        color: var(--header-text);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 10;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .header-left img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+      }
+
+      .chatbot-header h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      .back-button {
+        color: var(--header-text);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+        background: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Loan Calculator Styles */
+.loan-calculator {
+  margin: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--input-border); /* Use variable for border */
+  border-radius: 10px;
+  background: var(--bg-color); /* Use variable for background */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: background-color 0.3s, border-color 0.3s; /* Transition for dark mode */
+}
+
+.loan-calculator h3 {
+  margin-bottom: 1rem;
+  color: var(--header-bg); /* Use variable for header color */
+  font-size: 1.5rem; /* Increased font size */
+  text-align: center; /* Centered header */
+}
+
+.loan-calculator label {
+  display: block; /* Block display for labels */
+  margin-bottom: 0.5rem; /* Space between label and input */
+  font-weight: 600; /* Bold labels */
+  color: var(--text-color); /* Use variable for text color */
+}
+
+.loan-calculator input[type="number"] {
+  width: 100%; /* Full width */
+  padding: 10px; /* Padding for input */
+  border: 1px solid var(--input-border); /* Use variable for border */
+  border-radius: 5px; /* Rounded corners */
+  margin-bottom: 1rem; /* Space between inputs */
+  font-size: 1rem; /* Font size */
+  transition: border-color 0.3s; /* Transition for focus effect */
+  background: var(--input-bg); /* Use variable for input background */
+  color: var(--text-color); /* Use variable for text color */
+}
+
+.loan-calculator input[type="number"]:focus {
+  border-color: #4a90e2; /* Change border color on focus */
+  outline: none; /* Remove default outline */
+}
+
+.loan-calculator button {
+  background: #4a90e2; /* Vibrant button color */
+  color: white; /* White text */
+  border: none; /* No border */
+  padding: 10px 15px; /* Padding for buttons */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor */
+  font-size: 1rem; /* Font size */
+  transition: background-color 0.3s, transform 0.2s; /* Transition effects */
+}
+
+.loan-calculator button:hover {
+  background: #357ab8; /* Darker shade on hover */
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.loan-calculator #emi-result {
+  margin-top: 1rem;
+  font-weight: bold;
+  font-size: 1.2rem; /* Larger font for results */
+  text-align: center; /* Centered result text */
+  color: #4a90e2; /* Result color */
+}
+
+
+      .bot-message,
+      .user-message {
+        padding: 12px 16px;
+        border-radius: 18px;
+        margin-bottom: 0;
+        max-width: 80%;
+        word-wrap: break-word;
+        position: relative;
+        animation: fadeIn 0.3s ease-out;
+        line-height: 1.4;
+      }
+
+      .bot-message {
+        background: var(--message-bot-bg);
+        border-radius: 18px 18px 18px 4px;
+        align-self: flex-start;
+      }
+
+      .user-message {
+        background: var(--message-user-bg);
+        color: var(--message-user-text);
+        border-radius: 18px 18px 4px 18px;
+        align-self: flex-end;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .chatbot-input-container {
+        padding: 1rem;
+        background: var(--input-bg);
+        border-top: 1px solid var(--input-border);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .input-wrapper {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid var(--input-border);
+        border-radius: 30px;
+        outline: none;
+        font-size: 1rem;
+        background: var(--input-bg);
+        color: var(--text-color);
+      }
+
+      #send-button,
+      #tts-button {
+        background: var(--header-bg);
+        color: var(--header-text);
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+
+      #send-button:hover,
+      #tts-button:hover {
+        transform: scale(1.05);
+      }
+
+      #tts-button.active {
+        background: #2196f3;
+      }
+
+      .voice-status {
+        text-align: center;
+        color: var(--status-text);
+        font-size: 0.9rem;
+        margin-top: 5px;
+      }
+
+      .typing-indicator {
+        display: none;
+        padding: 12px 16px;
+        background: var(--message-bot-bg);
+        border-radius: 18px 18px 18px 4px;
+        align-self: flex-start;
+        max-width: 80%;
+        margin-bottom: 12px;
+      }
+
+      .typing-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .typing-text {
+        font-size: 0.9rem;
+        color: var(--status-text);
+      }
+
+      .typing-dots {
+        display: flex;
+        gap: 4px;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--typing-dot-color);
+        border-radius: 50%;
+        animation: typingAnimation 1.4s infinite ease-in-out;
+      }
+
+      .typing-dot:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typingAnimation {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-4px);
+        }
+      }
+
+      .dark-mode-toggle {
+        position: absolute;
+        right: 120px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toggle-label {
+        font-size: 0.8rem;
+        color: var(--header-text);
+        position: relative;
+        left: -40px;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 20px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 20px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #2196f3;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(20px);
+      }
+
+      .favorite-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: var(--favorite-color);
+        cursor: pointer;
+        font-size: 1rem;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
+
+      .favorite-button:hover {
+        opacity: 1;
+      }
+
+      .favorite-button.active {
+        opacity: 1;
+      }
+
+      .error-message {
+        color: var(--error-color);
+        text-align: center;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .garden-tips {
+        background: var(--message-bot-bg);
+        border-radius: 18px 18px 18px 4px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+        color: var(--text-color);
+      }
+
+      .garden-tips h3 {
+        margin-bottom: 8px;
+        color: var(--header-bg);
+      }
+
+      .garden-tips ul {
+        padding-left: 20px;
+      }
+
+      .garden-tips li {
+        margin-bottom: 4px;
+      }
+
+      @media (max-width: 768px) {
+        .chatbot-header {
+          padding: 1rem;
+        }
+
+        .bot-message,
+        .user-message {
+          max-width: 90%;
+          padding: 10px 14px;
+          font-size: 0.95rem;
+        }
+
+        .dark-mode-toggle {
+          right: 100px;
+        }
+
+        .toggle-label {
+          left: -60px;
+          font-size: 0.7rem;
+        }
+
+        .chatbot-input {
+          padding: 10px 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header-left h2 {
+          font-size: 1rem;
+        }
+
+        .dark-mode-toggle {
+          right: 80px;
+        }
+
+        .toggle-label {
+          display: none;
+        }
+
+        .back-button span {
+          display: none;
+        }
+      }
+
+      /* Markdown formatting styles */
+      .bot-message strong {
+        font-weight: 700;
+        color: #2e7d32;
+      }
+
+      .bot-message em {
+        font-style: italic;
+      }
+
+      .bot-message h3 {
+        margin-top: 10px;
+        margin-bottom: 5px;
+        color: #2e7d32;
+        font-size: 1.1em;
+      }
+
+      .bot-message ul {
+        margin-left: 20px;
+        margin-bottom: 10px;
+      }
+
+      .bot-message li {
+        margin-bottom: 5px;
+      }
+
+      .bot-message p {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main Chat Container -->
+    <div class="chatbot-fullpage">
+      <!-- Header with Title and Controls -->
+      <div class="chatbot-header">
+        <div class="header-left">
+          <h2>FinTrackBot - Personal Finance Chatbot 💰</h2>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <div class="dark-mode-toggle">
+          <span class="toggle-label">Dark Mode</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="dark-mode-toggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Back Button -->
+        <a href="index.html" class="back-button">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        </a>
+      </div>
+
+      <!-- Messages Container -->
+      <div class="chatbot-messages">
+        <!-- Initial Bot Message -->
+        <div class="bot-message">
+          <p>
+            Hello! I'm <strong>FinTrackBot</strong> 💰—your finance assistant.
+            I can help you with budgeting, tracking your expenses, and managing your savings effectively.
+            Ask me anything about personal finance!
+          </p>
+        </div>
+
+        <!-- Finance Tips Section -->
+        <div class="garden-tips">
+          <h3>💡 Finance Tips</h3>
+          <ul>
+            <li>Ask how to track your daily or monthly expenses</li>
+            <li>Get help creating a personalized budget</li>
+            <li>Learn about the 50/30/20 rule for spending</li>
+            <li>Ask for saving and investment strategies</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="chatbot-input-container">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            class="chatbot-input"
+            placeholder="Ask me anything about finance..."
+          />
+          <button id="tts-button" title="Toggle Text-to-Speech">
+            <i class="fas fa-volume-up"></i>
+          </button>
+          <button id="send-button" title="Send Message">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Loan Calculator Section -->
+<div class="loan-calculator" >
+  <h3 style="margin-bottom: 1rem;">📊 Loan EMI Calculator</h3>
+  <label>Loan Amount: <input type="number" id="loan-amount" /></label><br /><br />
+  <label>Interest Rate (Annual %): <input type="number" id="interest-rate" /></label><br /><br />
+  <label>Loan Tenure (Years): <input type="number" id="loan-tenure" /></label><br /><br />
+  <button onclick="calculateEMI()">Calculate EMI (Locally)</button>
+  <button onclick="sendToBotEMI()" style="margin-left: 10px;">Calculate with Bot 🤖</button>
+  <p id="emi-result" style="margin-top: 1rem; font-weight: bold;"></p>
+</div>
+
+    
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+  </body>
+</html>
